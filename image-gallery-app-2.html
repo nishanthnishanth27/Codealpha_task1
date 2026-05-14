@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LENS — Gallery App</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   ROOT & RESET
+═══════════════════════════════════════════ */
+:root {
+  --bg:       #060610;
+  --surface:  #0d0d20;
+  --card:     #12122a;
+  --nav-bg:   #09091a;
+  --a1:       #ff6b35;
+  --a2:       #f7c59f;
+  --a3:       #00d4ff;
+  --a4:       #7b2fff;
+  --gold:     #ffc947;
+  --white:    #f4f4ff;
+  --muted:    #6a6a9a;
+  --g1: linear-gradient(135deg,#ff6b35,#f7c59f);
+  --g2: linear-gradient(135deg,#00d4ff,#7b2fff);
+  --g3: linear-gradient(135deg,#ff6b35,#7b2fff);
+  --shadow: 0 8px 40px rgba(0,0,0,0.7);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Exo 2', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+img { display:block; }
+button { cursor:pointer; border:none; background:none; }
+
+/* ═══════════════════════════════════════════
+   SPLASH / APP LOADING SCREEN
+═══════════════════════════════════════════ */
+#splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  transition: opacity 0.7s ease, visibility 0.7s ease;
+}
+#splash.hide { opacity:0; visibility:hidden; pointer-events:none; }
+
+.splash-logo {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: clamp(3.5rem, 12vw, 8rem);
+  letter-spacing: 0.12em;
+  position: relative;
+  line-height: 1;
+}
+/* 3D LAYERED TEXT EFFECT */
+.splash-logo .txt {
+  background: var(--g1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  z-index: 3;
+  filter: drop-shadow(0 0 30px rgba(255,107,53,0.6));
+  animation: logoGlow 2s ease-in-out infinite alternate;
+}
+.splash-logo::before {
+  content: 'LENS';
+  position: absolute; inset: 0;
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: 1em;
+  letter-spacing: 0.12em;
+  background: var(--g2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transform: translate(4px, 4px);
+  z-index: 2;
+}
+.splash-logo::after {
+  content: 'LENS';
+  position: absolute; inset: 0;
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: 1em;
+  letter-spacing: 0.12em;
+  color: rgba(0,0,0,0.5);
+  transform: translate(8px, 8px);
+  z-index: 1;
+  filter: blur(2px);
+}
+@keyframes logoGlow {
+  from { filter: drop-shadow(0 0 20px rgba(255,107,53,0.5)); }
+  to   { filter: drop-shadow(0 0 50px rgba(255,107,53,0.9)) drop-shadow(0 0 80px rgba(0,212,255,0.4)); }
+}
+
+.splash-sub {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(0.55rem, 2vw, 0.85rem);
+  letter-spacing: 0.55em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* SPLASH — IMAGE GALLERY NAME */
+.splash-gallery-name {
+  text-align: center;
+  line-height: 1;
+  animation: splashNameIn 0.9s cubic-bezier(0.23,1,0.32,1) 0.3s both;
+}
+@keyframes splashNameIn {
+  from { opacity:0; transform: translateY(30px) scale(0.92); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+.sgn-word1 {
+  display: block;
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: clamp(2.8rem, 10vw, 7.5rem);
+  letter-spacing: 0.18em;
+  /* 3D layered effect */
+  color: var(--white);
+  text-shadow:
+    2px 2px 0 rgba(255,107,53,0.7),
+    4px 4px 0 rgba(255,107,53,0.5),
+    6px 6px 0 rgba(255,107,53,0.3),
+    8px 8px 0 rgba(255,107,53,0.15),
+    0 0 60px rgba(255,107,53,0.3);
+  animation: nameFloat 3s ease-in-out infinite alternate;
+}
+.sgn-word2 {
+  display: block;
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: clamp(2.8rem, 10vw, 7.5rem);
+  letter-spacing: 0.18em;
+  background: var(--g1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(3px 3px 0 rgba(255,107,53,0.5)) drop-shadow(6px 6px 0 rgba(255,107,53,0.25));
+  animation: nameFloat 3s ease-in-out 0.3s infinite alternate;
+}
+@keyframes nameFloat {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-6px); }
+}
+
+/* SPLASH DIVIDER */
+.splash-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(340px, 80vw);
+  animation: splashNameIn 0.9s cubic-bezier(0.23,1,0.32,1) 0.5s both;
+}
+.splash-divider::before,
+.splash-divider::after {
+  content: '';
+  flex: 1; height: 1px;
+  background: linear-gradient(to right, transparent, rgba(255,107,53,0.5), transparent);
+}
+.splash-diamond {
+  width: 8px; height: 8px;
+  background: var(--a1);
+  transform: rotate(45deg);
+  box-shadow: 0 0 10px rgba(255,107,53,0.8);
+  animation: diamondPulse 1.5s ease-in-out infinite alternate;
+}
+@keyframes diamondPulse {
+  from { box-shadow: 0 0 8px rgba(255,107,53,0.6); }
+  to   { box-shadow: 0 0 20px rgba(255,107,53,1), 0 0 40px rgba(255,107,53,0.4); }
+}
+
+/* PROGRESS BAR */
+.splash-progress-wrap {
+  width: min(300px, 78vw); height: 3px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 2px;
+  overflow: hidden;
+  animation: splashNameIn 0.9s cubic-bezier(0.23,1,0.32,1) 0.6s both;
+}
+.splash-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--g1);
+  border-radius: 2px;
+  transition: width 0.15s ease;
+  box-shadow: 0 0 10px rgba(255,107,53,0.7);
+}
+.splash-pct {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  animation: splashNameIn 0.9s 0.65s both;
+}
+
+#splashLoadingArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* OPEN GALLERY BUTTON */
+.splash-open-btn {
+  display: none; /* shown when loading reaches 100% */
+  position: relative;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  font-size: clamp(0.75rem, 2.5vw, 1rem);
+  letter-spacing: 0.35em;
+  padding: 18px 56px;
+  border-radius: 4px;
+  color: var(--white);
+  overflow: hidden;
+  border: none;
+  cursor: pointer;
+  animation: btnAppear 0.6s cubic-bezier(0.23,1,0.32,1) both;
+}
+@keyframes btnAppear {
+  from { opacity:0; transform:scale(0.85) translateY(20px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
+}
+.sob-bg {
+  position:absolute; inset:0;
+  background: var(--g3);
+  background-size:200% 200%;
+  animation:sobGrad 2.5s ease infinite;
+  z-index:0;
+}
+@keyframes sobGrad {
+  0%,100%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+}
+.sob-shine {
+  position:absolute; top:0; left:-160%;
+  width:60%; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent);
+  animation:sobShine 2s ease-in-out infinite;
+  z-index:1;
+}
+@keyframes sobShine { to{left:200%;} }
+.sob-glow {
+  position:absolute; inset:-2px;
+  background: var(--g3);
+  border-radius:5px;
+  z-index:-1;
+  filter:blur(10px);
+  opacity:0.5;
+  animation:sobGrad 2.5s ease infinite;
+}
+.sob-txt {
+  position:relative; z-index:2;
+  display:flex; align-items:center; gap:10px;
+}
+.sob-arrow {
+  display:inline-block;
+  animation:arrowBounce 1s ease-in-out infinite alternate;
+}
+@keyframes arrowBounce {
+  from{transform:translateX(0);}
+  to{transform:translateX(5px);}
+}
+.splash-open-btn:hover { box-shadow:0 0 50px rgba(255,107,53,0.7), 0 0 100px rgba(123,47,255,0.3); transform:translateY(-3px); transition:box-shadow 0.3s, transform 0.3s; }
+.splash-open-btn:active { transform:translateY(-1px); }
+
+/* ═══════════════════════════════════════════
+   TOP NAV BAR
+═══════════════════════════════════════════ */
+#appNav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 800;
+  height: 62px;
+  background: rgba(6,6,16,0.88);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255,107,53,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  transform: translateY(-100%);
+  transition: transform 0.6s cubic-bezier(0.23,1,0.32,1);
+}
+#appNav.show { transform: translateY(0); }
+
+.nav-brand {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: 1.6rem;
+  letter-spacing: 0.15em;
+  background: var(--g1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  text-shadow: none;
+  filter: drop-shadow(0 0 8px rgba(255,107,53,0.5));
+}
+.nav-brand::before {
+  content: 'LENS';
+  position: absolute; top: 2px; left: 2px;
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: 1em;
+  letter-spacing: 0.15em;
+  background: var(--g2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  z-index: -1;
+}
+
+.nav-right { display:flex; align-items:center; gap:14px; }
+
+/* HAMBURGER */
+.hamburger {
+  width: 42px; height: 42px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,107,53,0.3);
+  transition: border-color 0.3s, box-shadow 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.hamburger::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg,rgba(255,107,53,0.12),rgba(0,212,255,0.12));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.hamburger:hover::before, .hamburger.open::before { opacity: 1; }
+.hamburger:hover, .hamburger.open { border-color: var(--a1); box-shadow: 0 0 16px rgba(255,107,53,0.4); }
+
+.ham-line {
+  width: 22px; height: 2px;
+  background: var(--a1);
+  border-radius: 2px;
+  transition: transform 0.35s cubic-bezier(0.23,1,0.32,1), opacity 0.3s, width 0.3s;
+}
+.hamburger.open .ham-line:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+.hamburger.open .ham-line:nth-child(2) { opacity: 0; width: 0; }
+.hamburger.open .ham-line:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+/* ═══════════════════════════════════════════
+   SIDE PANEL (Hamburger Menu with Slides)
+═══════════════════════════════════════════ */
+#sidePanel {
+  position: fixed;
+  top: 0; right: 0;
+  width: min(360px, 88vw);
+  height: 100vh;
+  background: var(--nav-bg);
+  border-left: 1px solid rgba(255,107,53,0.2);
+  z-index: 900;
+  transform: translateX(100%);
+  transition: transform 0.45s cubic-bezier(0.23,1,0.32,1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#sidePanel.open { transform: translateX(0); }
+
+.panel-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 890;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+.panel-backdrop.show { opacity:1; pointer-events:all; }
+
+.panel-header {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(255,107,53,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.panel-title {
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.25em;
+  background: var(--g1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.panel-close {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,107,53,0.4);
+  color: var(--a1);
+  font-size: 1.1rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.panel-close:hover { background: rgba(255,107,53,0.15); box-shadow: 0 0 12px rgba(255,107,53,0.4); }
+
+/* SLIDES inside panel */
+.panel-slides {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,107,53,0.3) transparent;
+}
+
+.slide-card {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  height: 130px;
+  transition: transform 0.3s ease, box-shadow 0.3s;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.slide-card:hover { transform: translateX(-4px) scale(1.01); box-shadow: 0 10px 30px rgba(0,0,0,0.5), 4px 0 0 var(--a1) inset; }
+.slide-card img {
+  width:100%; height:100%;
+  object-fit: cover;
+  transition: transform 0.5s ease, filter 0.4s;
+  filter: brightness(0.75) saturate(1.2);
+}
+.slide-card:hover img { transform:scale(1.07); filter:brightness(0.9) saturate(1.4); }
+.slide-info {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(6,6,16,0.92));
+  padding: 20px 12px 10px;
+}
+.slide-cat {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.35em;
+  color: var(--a1);
+  text-transform: uppercase;
+}
+.slide-name {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--white);
+  margin-top: 2px;
+}
+.slide-badge {
+  position: absolute;
+  top: 10px; right: 10px;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.5rem;
+  letter-spacing: 0.2em;
+  padding: 3px 8px;
+  background: rgba(6,6,16,0.7);
+  border: 1px solid rgba(0,212,255,0.5);
+  color: var(--a3);
+  border-radius: 2px;
+  backdrop-filter: blur(4px);
+}
+
+/* Panel Group Header */
+.panel-group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.35em;
+  color: var(--a1);
+  padding: 14px 4px 6px;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255,107,53,0.15);
+  margin-bottom: 4px;
+}
+.pgh-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--a1);
+  box-shadow: 0 0 8px rgba(255,107,53,0.8);
+  flex-shrink: 0;
+}
+.pgh-count {
+  margin-left: auto;
+  background: rgba(255,107,53,0.15);
+  border: 1px solid rgba(255,107,53,0.3);
+  color: var(--a1);
+  font-size: 0.55rem;
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+/* Panel Nav Items — fully styled buttons */
+.panel-nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 6px;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+.panel-nav-item::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--g1);
+  border-radius: 0 2px 2px 0;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.panel-nav-item:hover,
+.panel-nav-item.pni-active {
+  color: var(--white);
+  background: rgba(255,107,53,0.08);
+  border-color: rgba(255,107,53,0.2);
+  box-shadow: 0 0 20px rgba(255,107,53,0.08);
+}
+.panel-nav-item:hover::before,
+.panel-nav-item.pni-active::before { opacity: 1; }
+.panel-nav-item.pni-active { color: var(--a1); }
+.pni-txt { flex: 1; }
+.pni-arrow {
+  font-size: 1.1rem;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.25s, transform 0.25s;
+  color: var(--a1);
+}
+.panel-nav-item:hover .pni-arrow,
+.panel-nav-item.pni-active .pni-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+.ico { font-size: 1.15rem; flex-shrink: 0; }
+
+/* ═══════════════════════════════════════════
+   HERO SLIDER
+═══════════════════════════════════════════ */
+#heroSlider {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  margin-top: 62px;
+}
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+.hero-slide.active { opacity: 1; }
+.hero-slide img {
+  width:100%; height:100%;
+  object-fit: cover;
+  filter: brightness(0.55) saturate(1.2);
+  transform: scale(1.05);
+  transition: transform 8s ease;
+}
+.hero-slide.active img { transform: scale(1); }
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(6,6,16,0.95) 0%, rgba(6,6,16,0.3) 50%, transparent 80%);
+}
+.hero-content {
+  position: absolute;
+  bottom: 100px;
+  left: 40px;
+  right: 40px;
+  z-index: 5;
+}
+@media(max-width:600px){ .hero-content { left:20px; right:20px; bottom:80px; } }
+
+.hero-cat {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(0.55rem,1.5vw,0.8rem);
+  letter-spacing: 0.5em;
+  color: var(--a1);
+  margin-bottom: 12px;
+  transform: translateY(20px);
+  opacity: 0;
+  animation: heroTextIn 0.7s 0.2s ease forwards;
+}
+.hero-title {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: clamp(2.5rem, 8vw, 7rem);
+  line-height: 0.95;
+  letter-spacing: 0.04em;
+  color: var(--white);
+  margin-bottom: 20px;
+  transform: translateY(30px);
+  opacity: 0;
+  animation: heroTextIn 0.7s 0.35s ease forwards;
+  /* 3D text */
+  text-shadow:
+    3px 3px 0 rgba(255,107,53,0.5),
+    6px 6px 0 rgba(255,107,53,0.25),
+    9px 9px 0 rgba(255,107,53,0.1),
+    0 0 60px rgba(255,107,53,0.3);
+}
+.hero-desc {
+  font-family: 'Exo 2', sans-serif;
+  font-size: clamp(0.85rem, 2vw, 1.1rem);
+  color: rgba(244,244,255,0.65);
+  max-width: 460px;
+  transform: translateY(20px);
+  opacity: 0;
+  animation: heroTextIn 0.7s 0.5s ease forwards;
+  margin-bottom: 24px;
+}
+@keyframes heroTextIn {
+  to { opacity:1; transform:translateY(0); }
+}
+.hero-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  padding: 13px 30px;
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+  color: var(--white);
+  opacity: 0;
+  animation: heroTextIn 0.7s 0.65s ease forwards;
+  transition: box-shadow 0.3s;
+}
+.hero-btn .hb-bg {
+  position: absolute; inset: 0;
+  background: var(--g1);
+  z-index: 0;
+}
+.hero-btn .hb-shine {
+  position: absolute; top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);
+  animation: shine 2.5s 1.5s ease-in-out infinite;
+  z-index: 1;
+}
+.hero-btn span { position:relative; z-index:2; }
+.hero-btn:hover { box-shadow: 0 0 30px rgba(255,107,53,0.6); }
+@keyframes shine { to { left: 200%; } }
+
+/* HERO DOTS */
+.hero-dots {
+  position: absolute;
+  bottom: 30px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; gap: 10px;
+  z-index: 10;
+}
+.hero-dot {
+  width: 28px; height: 3px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 2px;
+  transition: background 0.3s, width 0.3s;
+  cursor: pointer;
+}
+.hero-dot.active { background: var(--a1); width: 44px; }
+
+/* HERO ARROWS */
+.hero-arrow {
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  z-index: 10;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(6,6,16,0.5);
+  backdrop-filter: blur(6px);
+  color: var(--white);
+  font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+}
+.hero-arrow:hover { border-color: var(--a1); background: rgba(255,107,53,0.15); box-shadow: 0 0 20px rgba(255,107,53,0.4); }
+.hero-arrow.prev { left: 20px; }
+.hero-arrow.next { right: 20px; }
+
+/* ═══════════════════════════════════════════
+   MAIN CONTENT
+═══════════════════════════════════════════ */
+#mainContent { position: relative; z-index: 10; }
+
+/* SECTION HEADER */
+.section-head {
+  text-align: center;
+  padding: 70px 20px 40px;
+}
+.section-eyebrow {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(0.55rem, 1.5vw, 0.75rem);
+  letter-spacing: 0.55em;
+  color: var(--a1);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.section-title {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: clamp(2.2rem, 7vw, 5.5rem);
+  letter-spacing: 0.06em;
+  line-height: 0.95;
+  /* 3D FONT */
+  color: var(--white);
+  text-shadow:
+    2px 2px 0 rgba(0,212,255,0.5),
+    4px 4px 0 rgba(0,212,255,0.3),
+    6px 6px 0 rgba(0,212,255,0.1),
+    0 0 50px rgba(0,212,255,0.2);
+}
+.section-title .accent {
+  background: var(--g1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  filter: drop-shadow(3px 3px 0 rgba(255,107,53,0.4)) drop-shadow(6px 6px 0 rgba(255,107,53,0.2));
+}
+.section-line {
+  display: block;
+  width: 70px; height: 3px;
+  background: var(--g1);
+  margin: 18px auto 0;
+  border-radius: 2px;
+  box-shadow: 0 0 12px rgba(255,107,53,0.5);
+}
+
+/* FILTER BAR */
+.filter-bar {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 20px 40px;
+}
+.f-btn {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  padding: 8px 20px;
+  border-radius: 2px;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--muted);
+  background: transparent;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.f-btn::before {
+  content:'';
+  position:absolute;inset:0;
+  background:var(--g1);
+  opacity:0;
+  transition:opacity 0.3s;
+}
+.f-btn:hover, .f-btn.active {
+  color: var(--white);
+  border-color: var(--a1);
+  box-shadow: 0 0 16px rgba(255,107,53,0.3);
+}
+.f-btn:hover::before, .f-btn.active::before { opacity:0.12; }
+.f-btn span { position:relative; z-index:1; }
+
+/* GALLERY GRID */
+.gallery-wrap {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 0 18px;
+}
+.gallery-grid {
+  columns: 4 240px;
+  column-gap: 14px;
+}
+@media(max-width:700px){ .gallery-grid { columns:2; } }
+@media(max-width:400px){ .gallery-grid { columns:1; } }
+
+.g-item {
+  break-inside: avoid;
+  margin-bottom: 14px;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  animation: gridIn 0.55s cubic-bezier(0.23,1,0.32,1) both;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.g-item:nth-child(1){animation-delay:.04s}
+.g-item:nth-child(2){animation-delay:.08s}
+.g-item:nth-child(3){animation-delay:.12s}
+.g-item:nth-child(4){animation-delay:.16s}
+.g-item:nth-child(5){animation-delay:.2s}
+.g-item:nth-child(6){animation-delay:.24s}
+.g-item:nth-child(7){animation-delay:.28s}
+.g-item:nth-child(8){animation-delay:.32s}
+.g-item:nth-child(9){animation-delay:.36s}
+.g-item:nth-child(10){animation-delay:.4s}
+.g-item:nth-child(11){animation-delay:.44s}
+.g-item:nth-child(12){animation-delay:.48s}
+
+@keyframes gridIn {
+  from { opacity:0; transform:scale(0.9) translateY(24px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
+}
+.g-item img {
+  width:100%;
+  display:block;
+  transition: transform 0.55s ease, filter 0.4s;
+  filter: brightness(0.88) saturate(1.1);
+}
+.g-item:hover img { transform:scale(1.07); filter:brightness(1.05) saturate(1.35); }
+.g-item:hover { box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 24px rgba(255,107,53,0.2); z-index:4; transform:translateY(-4px); }
+.g-item { transition: transform 0.3s, box-shadow 0.3s; }
+
+.g-overlay {
+  position:absolute; inset:0;
+  background: linear-gradient(to top, rgba(6,6,16,0.95) 0%, transparent 55%);
+  opacity:0;
+  transition: opacity 0.4s;
+  padding: 16px 14px 14px;
+  display:flex; flex-direction:column; justify-content:flex-end;
+}
+.g-item:hover .g-overlay { opacity:1; }
+.g-cat {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.3em;
+  color: var(--a1);
+  margin-bottom: 4px;
+}
+.g-title {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--white);
+}
+.g-tag {
+  position:absolute; top:10px; left:10px;
+  font-family:'Orbitron',monospace;
+  font-size:0.52rem;
+  letter-spacing:0.2em;
+  padding:3px 9px;
+  border-radius:2px;
+  background:rgba(6,6,16,0.72);
+  border:1px solid rgba(0,212,255,0.4);
+  color:var(--a3);
+  backdrop-filter:blur(4px);
+  transform:translateY(-4px);
+  opacity:0;
+  transition: opacity 0.3s, transform 0.3s;
+}
+.g-item:hover .g-tag { opacity:1; transform:translateY(0); }
+
+/* HIDDEN items */
+.g-item.hidden { display:none; }
+.g-item.pop-in { animation: popIn 0.5s cubic-bezier(0.23,1,0.32,1) both; }
+@keyframes popIn {
+  from { opacity:0; transform:scale(0.85) translateY(30px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
+}
+
+/* LOAD MORE BUTTON */
+.load-section {
+  text-align: center;
+  padding: 44px 20px 30px;
+}
+.load-btn {
+  position: relative;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.3em;
+  padding: 16px 52px;
+  border-radius: 4px;
+  color: var(--white);
+  overflow: hidden;
+  transition: box-shadow 0.3s, transform 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.load-btn .lb-bg {
+  position:absolute; inset:0;
+  background: var(--g3);
+  background-size:200% 200%;
+  animation: gradPulse 3s ease infinite;
+  z-index:0;
+  transition: opacity 0.3s;
+}
+.load-btn .lb-border {
+  position:absolute; inset:-1px;
+  background: var(--g3);
+  border-radius:5px;
+  z-index:-1;
+}
+.load-btn .lb-inner {
+  position:absolute; inset:2px;
+  background: var(--bg);
+  border-radius:3px;
+  z-index:0;
+  transition: opacity 0.3s;
+}
+.load-btn .lb-shine {
+  position:absolute;
+  top:0; left:-150%;
+  width:60%; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);
+  animation:lbShine 2s ease-in-out infinite;
+  z-index:1;
+}
+@keyframes lbShine { to { left:200%; } }
+.load-btn .lb-txt {
+  position:relative; z-index:2;
+  background:var(--g3);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  transition:all 0.3s;
+}
+.load-btn:hover .lb-inner { opacity:0; }
+.load-btn:hover .lb-txt {
+  background:var(--white);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.load-btn:hover { box-shadow:0 0 40px rgba(255,107,53,0.5), 0 0 80px rgba(123,47,255,0.25); transform:translateY(-2px); }
+.load-btn:active { transform:translateY(0); }
+@keyframes gradPulse {
+  0%,100%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+}
+/* Spinner */
+.lb-spin {
+  display:none;
+  position:absolute; inset:0; z-index:3;
+  align-items:center; justify-content:center;
+}
+.load-btn.loading .lb-spin { display:flex; }
+.load-btn.loading .lb-txt { visibility:hidden; }
+.spin-ring {
+  width:22px; height:22px;
+  border:2px solid rgba(255,255,255,0.2);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spinRing 0.75s linear infinite;
+}
+@keyframes spinRing { to{transform:rotate(360deg)} }
+
+/* STATS ROW */
+.stats-row {
+  display:flex; justify-content:center; gap:48px; flex-wrap:wrap;
+  padding:0 20px 60px;
+}
+.stat { text-align:center; }
+.stat-n {
+  font-family:'Orbitron',monospace; font-weight:900;
+  font-size:clamp(2rem,5vw,3.2rem);
+  background:var(--g1);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  filter:drop-shadow(0 0 12px rgba(255,107,53,0.4));
+  line-height:1;
+}
+.stat-l {
+  font-family:'Exo 2',sans-serif; font-size:0.75rem;
+  letter-spacing:0.3em; color:var(--muted);
+  text-transform:uppercase; margin-top:4px;
+}
+
+/* ═══════════════════════════════════════════
+   LIGHTBOX
+═══════════════════════════════════════════ */
+#lightbox {
+  display:none;
+  position:fixed; inset:0; z-index:2000;
+  background:rgba(6,6,16,0.96);
+  backdrop-filter:blur(16px);
+  align-items:center; justify-content:center;
+}
+#lightbox.open { display:flex; animation:lbOpen 0.3s ease; }
+@keyframes lbOpen { from{opacity:0} to{opacity:1} }
+.lb-inner {
+  position:relative;
+  max-width:92vw; max-height:90vh;
+  animation:lbZoom 0.35s cubic-bezier(0.23,1,0.32,1);
+}
+@keyframes lbZoom {
+  from{transform:scale(0.82) translateY(20px); opacity:0}
+  to{transform:scale(1) translateY(0); opacity:1}
+}
+.lb-img {
+  max-width:90vw; max-height:78vh;
+  object-fit:contain; display:block;
+  border-radius:6px;
+  box-shadow:0 0 80px rgba(255,107,53,0.2), 0 40px 100px rgba(0,0,0,0.8);
+  border:1px solid rgba(255,107,53,0.15);
+}
+.lb-cap { text-align:center; padding:14px 0 0; }
+.lb-cap .lc-cat {
+  font-family:'Orbitron',monospace; font-size:0.65rem;
+  letter-spacing:0.4em; color:var(--a1);
+}
+.lb-cap .lc-ttl {
+  font-family:'Black Han Sans',sans-serif; font-size:1.4rem;
+  letter-spacing:0.06em; color:var(--white); margin-top:4px;
+  text-shadow:2px 2px 0 rgba(255,107,53,0.35);
+}
+.lb-close {
+  position:absolute; top:-46px; right:0;
+  font-family:'Orbitron',monospace; font-size:0.75rem;
+  letter-spacing:0.2em; color:var(--muted);
+  transition:color 0.2s; padding:6px;
+}
+.lb-close:hover{color:var(--a1);}
+.lb-nav-btn {
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:46px;height:46px; border-radius:50%;
+  border:1px solid rgba(255,255,255,0.15);
+  background:rgba(6,6,16,0.6); backdrop-filter:blur(6px);
+  color:var(--white); font-size:1.1rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.3s;
+}
+.lb-nav-btn:hover{border-color:var(--a1);box-shadow:0 0 20px rgba(255,107,53,0.4);background:rgba(255,107,53,0.15);}
+#lbPrev{left:-64px;}
+#lbNext{right:-64px;}
+@media(max-width:700px){
+  #lbPrev{left:-50px;}
+  #lbNext{right:-50px;}
+}
+
+/* ═══════════════════════════════════════════
+   PANEL TABS
+═══════════════════════════════════════════ */
+.panel-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255,107,53,0.15);
+  flex-shrink: 0;
+}
+.ptab {
+  flex: 1;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  padding: 12px 0;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  transition: color 0.3s, border-color 0.3s;
+  background: none;
+  border-left: none; border-right: none; border-top: none;
+  cursor: pointer;
+}
+.ptab.active {
+  color: var(--a1);
+  border-bottom-color: var(--a1);
+}
+
+/* CATEGORY LIST in panel */
+.panel-cat-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 12px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,107,53,0.3) transparent;
+}
+
+.pcat-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+.pcat-item::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--g1);
+  border-radius: 3px 0 0 3px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.pcat-item:hover, .pcat-item.active {
+  background: rgba(255,107,53,0.08);
+  border-color: rgba(255,107,53,0.3);
+  transform: translateX(4px);
+}
+.pcat-item:hover::before, .pcat-item.active::before { opacity: 1; }
+
+.pcat-thumb {
+  width: 48px; height: 48px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.pcat-info { flex: 1; min-width: 0; }
+.pcat-name {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--white);
+  text-transform: capitalize;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pcat-count {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.pcat-arrow {
+  font-size: 1rem;
+  color: var(--a1);
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+.pcat-item:hover .pcat-arrow, .pcat-item.active .pcat-arrow {
+  opacity: 1; transform: translateX(0);
+}
+
+/* ═══════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════ */
+footer {
+  border-top:1px solid rgba(255,255,255,0.05);
+  padding:30px 20px;
+  text-align:center;
+  color:var(--muted);
+  font-size:0.8rem;
+  letter-spacing:0.15em;
+}
+footer strong {
+  background:var(--g1);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+/* BG ATMOSPHERE */
+#mainContent::before {
+  content:'';
+  position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse at 15% 30%,rgba(255,107,53,0.07) 0%,transparent 55%),
+    radial-gradient(ellipse at 85% 70%,rgba(0,212,255,0.07) 0%,transparent 55%),
+    radial-gradient(ellipse at 50% 50%,rgba(123,47,255,0.04) 0%,transparent 65%);
+  pointer-events:none; z-index:0;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ SPLASH SCREEN ═══ -->
+<div id="splash">
+  <!-- LENS brand at top -->
+  <div class="splash-logo">
+    <div class="txt">LENS</div>
+  </div>
+  <p class="splash-sub">Curated · Immersive · Visual</p>
+
+  <!-- BIG "IMAGE GALLERY" NAME -->
+  <div class="splash-gallery-name">
+    <span class="sgn-word1">IMAGE</span>
+    <span class="sgn-word2">GALLERY</span>
+  </div>
+
+  <div class="splash-divider"><div class="splash-diamond"></div></div>
+
+  <!-- PROGRESS BAR (shown while loading) -->
+  <div id="splashLoadingArea">
+    <div class="splash-progress-wrap">
+      <div class="splash-progress-bar" id="splashBar"></div>
+    </div>
+    <p class="splash-pct" id="splashPct">0%</p>
+  </div>
+
+  <!-- OPEN BUTTON (shown when ready) -->
+  <button class="splash-open-btn" id="splashOpenBtn" onclick="enterApp()">
+    <div class="sob-glow"></div>
+    <div class="sob-bg"></div>
+    <div class="sob-shine"></div>
+    <div class="sob-txt">
+      <span>Open Gallery</span>
+      <span class="sob-arrow">→</span>
+    </div>
+  </button>
+</div>
+
+<!-- ═══ BACKDROP ═══ -->
+<div class="panel-backdrop" id="backdrop"></div>
+
+<!-- ═══ TOP NAV ═══ -->
+<nav id="appNav">
+  <div class="nav-brand">LENS</div>
+  <div class="nav-right">
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <div class="ham-line"></div>
+      <div class="ham-line"></div>
+      <div class="ham-line"></div>
+    </button>
+  </div>
+</nav>
+
+<!-- ═══ SIDE PANEL ═══ -->
+<div id="sidePanel">
+  <div class="panel-header">
+    <div class="panel-title">EXPLORE</div>
+    <button class="panel-close" id="panelClose">✕</button>
+  </div>
+
+  <!-- TAB SWITCHER -->
+  <div class="panel-tabs">
+    <button class="ptab active" data-tab="categories" onclick="switchPanelTab('categories',this)">Categories</button>
+    <button class="ptab" data-tab="photos" onclick="switchPanelTab('photos',this)">Photos</button>
+  </div>
+
+  <!-- CATEGORIES TAB -->
+  <div class="panel-cat-list" id="panelCatList">
+    <!-- populated by JS -->
+  </div>
+
+  <!-- PHOTOS TAB -->
+  <div class="panel-slides" id="panelSlides" style="display:none">
+    <!-- slides populated by JS -->
+  </div>
+</div>
+
+<!-- ═══ HERO SLIDER ═══ -->
+<div id="heroSlider">
+  <!-- slides populated by JS -->
+  <div class="hero-dots" id="heroDots"></div>
+  <button class="hero-arrow prev" id="heroPrev">&#8592;</button>
+  <button class="hero-arrow next" id="heroNext">&#8594;</button>
+</div>
+
+<!-- ═══ MAIN CONTENT ═══ -->
+<div id="mainContent">
+
+  <div class="section-head">
+    <p class="section-eyebrow">Curated Collection</p>
+    <h2 class="section-title">THE <span class="accent">GALLERY</span></h2>
+    <span class="section-line"></span>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat"><div class="stat-n" id="sShown">12</div><div class="stat-l">Displayed</div></div>
+    <div class="stat"><div class="stat-n" id="sTotal">82</div><div class="stat-l">Total</div></div>
+    <div class="stat"><div class="stat-n">14</div><div class="stat-l">Categories</div></div>
+    <div class="stat"><div class="stat-n">4K</div><div class="stat-l">Resolution</div></div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar" id="filterBar">
+    <button class="f-btn active" data-cat="all"><span>All</span></button>
+    <button class="f-btn" data-cat="nature"><span>Nature</span></button>
+    <button class="f-btn" data-cat="ocean"><span>Ocean</span></button>
+    <button class="f-btn" data-cat="architecture"><span>Architecture</span></button>
+    <button class="f-btn" data-cat="city"><span>City</span></button>
+    <button class="f-btn" data-cat="mountains"><span>Mountains</span></button>
+    <button class="f-btn" data-cat="abstract"><span>Abstract</span></button>
+    <button class="f-btn" data-cat="desert"><span>Desert</span></button>
+    <button class="f-btn" data-cat="wildlife"><span>Wildlife</span></button>
+    <button class="f-btn" data-cat="space"><span>Space</span></button>
+    <button class="f-btn" data-cat="flowers"><span>Flowers</span></button>
+    <button class="f-btn" data-cat="travel"><span>Travel</span></button>
+    <button class="f-btn" data-cat="food"><span>Food</span></button>
+    <button class="f-btn" data-cat="minimal"><span>Minimal</span></button>
+    <button class="f-btn" data-cat="people"><span>People</span></button>
+  </div>
+
+  <!-- GALLERY GRID -->
+  <div class="gallery-wrap">
+    <div class="gallery-grid" id="gallery"></div>
+  </div>
+
+  <!-- LOAD MORE -->
+  <div class="load-section" id="loadSec">
+    <button class="load-btn" id="loadBtn">
+      <div class="lb-border"></div>
+      <div class="lb-inner"></div>
+      <div class="lb-bg"></div>
+      <div class="lb-shine"></div>
+      <div class="lb-spin"><div class="spin-ring"></div></div>
+      <span class="lb-txt">Load More Photos</span>
+    </button>
+  </div>
+
+  <footer>
+    <strong>LENS GALLERY</strong> &nbsp;·&nbsp; All photos via Unsplash &nbsp;·&nbsp; © 2026
+  </footer>
+</div>
+
+<!-- ═══ LIGHTBOX ═══ -->
+<div id="lightbox">
+  <div class="lb-inner">
+    <button class="lb-close" id="lbClose">✕ CLOSE</button>
+    <button class="lb-nav-btn" id="lbPrev">&#8592;</button>
+    <button class="lb-nav-btn" id="lbNext">&#8594;</button>
+    <img class="lb-img" id="lbImg" src="" alt="">
+    <div class="lb-cap">
+      <div class="lc-cat" id="lbCatTxt"></div>
+      <div class="lc-ttl" id="lbTtl"></div>
+      <div id="lbCounter" style="font-family:'Orbitron',monospace;font-size:0.62rem;letter-spacing:0.3em;color:var(--muted);margin-top:6px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════
+   DATA
+════════════════════════════════════ */
+const PHOTOS = [
+  // ── NATURE (7) ──
+  { cat:'nature',       title:'Emerald Forest',      src:'https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&q=80' },
+  { cat:'nature',       title:'Golden Hour',          src:'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&q=80' },
+  { cat:'nature',       title:'Wild Bloom',           src:'https://images.unsplash.com/photo-1490750967868-88df5691cc11?w=800&q=80' },
+  { cat:'nature',       title:'Morning Dew',          src:'https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=800&q=80' },
+  { cat:'nature',       title:'Rainforest Veil',      src:'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?w=800&q=80' },
+  { cat:'nature',       title:'Autumn Path',          src:'https://images.unsplash.com/photo-1504701954957-2010ec3bcec1?w=800&q=80' },
+  { cat:'nature',       title:'Sunlit Meadow',        src:'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=800&q=80' },
+
+  // ── OCEAN (7) ──
+  { cat:'ocean',        title:'Deep Azure',           src:'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=800&q=80' },
+  { cat:'ocean',        title:'Crashing Wave',        src:'https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?w=800&q=80' },
+  { cat:'ocean',        title:'Sunset Shore',         src:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80' },
+  { cat:'ocean',        title:'Tidal Mirror',         src:'https://images.unsplash.com/photo-1439405326854-014607f694d7?w=800&q=80' },
+  { cat:'ocean',        title:'Tropical Turquoise',   src:'https://images.unsplash.com/photo-1559494007-9f5847c49d94?w=800&q=80' },
+  { cat:'ocean',        title:'Rocky Coast',          src:'https://images.unsplash.com/photo-1471922694854-ff1b63b20054?w=800&q=80' },
+  { cat:'ocean',        title:'Calm Horizon',         src:'https://images.unsplash.com/photo-1468581264429-2548ef9eb732?w=800&q=80' },
+
+  // ── ARCHITECTURE (7) ──
+  { cat:'architecture', title:'Glass Horizon',        src:'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800&q=80' },
+  { cat:'architecture', title:'Steel & Light',        src:'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80' },
+  { cat:'architecture', title:'Arch & Void',          src:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80' },
+  { cat:'architecture', title:'Spiral Form',          src:'https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=800&q=80' },
+  { cat:'architecture', title:'Marble Interior',      src:'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80' },
+  { cat:'architecture', title:'Geometric Facade',     src:'https://images.unsplash.com/photo-1486820570001-b1a03b8f5fd8?w=800&q=80' },
+  { cat:'architecture', title:'Ancient Columns',      src:'https://images.unsplash.com/photo-1555993539-1732b0258235?w=800&q=80' },
+
+  // ── CITY (7) ──
+  { cat:'city',         title:'Neon Pulse',           src:'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&q=80' },
+  { cat:'city',         title:'Urban Grid',           src:'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&q=80' },
+  { cat:'city',         title:'Midnight Rain',        src:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800&q=80' },
+  { cat:'city',         title:'Bridge Light',         src:'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=800&q=80' },
+  { cat:'city',         title:'Tokyo Crossing',       src:'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80' },
+  { cat:'city',         title:'Skyline at Dusk',      src:'https://images.unsplash.com/photo-1444723121867-7a241cacace9?w=800&q=80' },
+  { cat:'city',         title:'Street Glow',          src:'https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?w=800&q=80' },
+
+  // ── MOUNTAINS (7) ──
+  { cat:'mountains',    title:'Peak Serenity',        src:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80' },
+  { cat:'mountains',    title:'Dawn Ridge',           src:'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=800&q=80' },
+  { cat:'mountains',    title:'Snow Veil',            src:'https://images.unsplash.com/photo-1520962880247-cfaf541c8724?w=800&q=80' },
+  { cat:'mountains',    title:'Alpine Lake',          src:'https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?w=800&q=80' },
+  { cat:'mountains',    title:'Rocky Summit',         src:'https://images.unsplash.com/photo-1439853949212-36089be82b7e?w=800&q=80' },
+  { cat:'mountains',    title:'Glacier Valley',       src:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80' },
+  { cat:'mountains',    title:'Foggy Pine',           src:'https://images.unsplash.com/photo-1476610182048-b716b8518aae?w=800&q=80' },
+
+  // ── ABSTRACT (6) ──
+  { cat:'abstract',     title:'Chromatic Flow',       src:'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&q=80' },
+  { cat:'abstract',     title:'Liquid Light',         src:'https://images.unsplash.com/photo-1550859492-d5da9d8e45f3?w=800&q=80' },
+  { cat:'abstract',     title:'Nebula Dream',         src:'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=800&q=80' },
+  { cat:'abstract',     title:'Prism Burst',          src:'https://images.unsplash.com/photo-1558591710-4b4a1ae0f7e2?w=800&q=80' },
+  { cat:'abstract',     title:'Color Smoke',          src:'https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=800&q=80' },
+  { cat:'abstract',     title:'Paint Splash',         src:'https://images.unsplash.com/photo-1536431311719-398b6704d4cc?w=800&q=80' },
+
+  // ── DESERT (6) ──
+  { cat:'desert',       title:'Sand Dunes',           src:'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800&q=80' },
+  { cat:'desert',       title:'Arid Horizon',         src:'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&q=80' },
+  { cat:'desert',       title:'Canyon Wall',          src:'https://images.unsplash.com/photo-1474044159687-1ee9f3a51722?w=800&q=80' },
+  { cat:'desert',       title:'Heat Mirage',          src:'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?w=800&q=80' },
+  { cat:'desert',       title:'Sahara Silence',       src:'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800&q=80' },
+  { cat:'desert',       title:'Cracked Earth',        src:'https://images.unsplash.com/photo-1504701954957-2010ec3bcec1?w=800&q=80' },
+
+  // ── WILDLIFE (7) ──
+  { cat:'wildlife',     title:'Lion King',            src:'https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=800&q=80' },
+  { cat:'wildlife',     title:'Eagle Eye',            src:'https://images.unsplash.com/photo-1444464666168-49d633b86797?w=800&q=80' },
+  { cat:'wildlife',     title:'Wolf in Snow',         src:'https://images.unsplash.com/photo-1494947665470-20322015e3a8?w=800&q=80' },
+  { cat:'wildlife',     title:'Elephant March',       src:'https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800&q=80' },
+  { cat:'wildlife',     title:'Fox at Dusk',          src:'https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=800&q=80' },
+  { cat:'wildlife',     title:'Owl Portrait',         src:'https://images.unsplash.com/photo-1543549049-9fbcc3cd9003?w=800&q=80' },
+  { cat:'wildlife',     title:'Cheetah Sprint',       src:'https://images.unsplash.com/photo-1551972251-12070d63502a?w=800&q=80' },
+
+  // ── SPACE (6) ──
+  { cat:'space',        title:'Milky Way',            src:'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800&q=80' },
+  { cat:'space',        title:'Star Trail',           src:'https://images.unsplash.com/photo-1464802686167-b939a6910659?w=800&q=80' },
+  { cat:'space',        title:'Nebula Cloud',         src:'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=800&q=80' },
+  { cat:'space',        title:'Cosmic Dust',          src:'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=800&q=80' },
+  { cat:'space',        title:'Aurora Sky',           src:'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800&q=80' },
+  { cat:'space',        title:'Moon Rise',            src:'https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?w=800&q=80' },
+
+  // ── FLOWERS (6) ──
+  { cat:'flowers',      title:'Cherry Blossom',       src:'https://images.unsplash.com/photo-1522383225653-ed111181a951?w=800&q=80' },
+  { cat:'flowers',      title:'Lavender Fields',      src:'https://images.unsplash.com/photo-1499002238440-d264edd596ec?w=800&q=80' },
+  { cat:'flowers',      title:'Sunflower Gold',       src:'https://images.unsplash.com/photo-1470509037663-253d2d33cf3b?w=800&q=80' },
+  { cat:'flowers',      title:'Rose Macro',           src:'https://images.unsplash.com/photo-1455659817273-f96807779a8a?w=800&q=80' },
+  { cat:'flowers',      title:'Poppy Field',          src:'https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?w=800&q=80' },
+  { cat:'flowers',      title:'Tulip Garden',         src:'https://images.unsplash.com/photo-1468581264429-2548ef9eb732?w=800&q=80' },
+
+  // ── TRAVEL (7) ──
+  { cat:'travel',       title:'Santorini Blue',       src:'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&q=80' },
+  { cat:'travel',       title:'Kyoto Temple',         src:'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=800&q=80' },
+  { cat:'travel',       title:'Machu Picchu',         src:'https://images.unsplash.com/photo-1587595431973-160d0d94add1?w=800&q=80' },
+  { cat:'travel',       title:'Taj Mahal Dawn',       src:'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800&q=80' },
+  { cat:'travel',       title:'Bali Rice Terrace',    src:'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80' },
+  { cat:'travel',       title:'Paris Rooftop',        src:'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800&q=80' },
+  { cat:'travel',       title:'Iceland Waterfall',    src:'https://images.unsplash.com/photo-1504893524553-b855bce32c67?w=800&q=80' },
+
+  // ── FOOD (6) ──
+  { cat:'food',         title:'Ramen Bowl',           src:'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=800&q=80' },
+  { cat:'food',         title:'Fresh Berries',        src:'https://images.unsplash.com/photo-1498557850523-fd3d118b962e?w=800&q=80' },
+  { cat:'food',         title:'Pizza Art',            src:'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80' },
+  { cat:'food',         title:'Macaron Tower',        src:'https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=800&q=80' },
+  { cat:'food',         title:'Sushi Platter',        src:'https://images.unsplash.com/photo-1553621042-f6e147245754?w=800&q=80' },
+  { cat:'food',         title:'Avocado Toast',        src:'https://images.unsplash.com/photo-1541519227354-08fa5d50c820?w=800&q=80' },
+
+  // ── MINIMAL (5) ──
+  { cat:'minimal',      title:'White Lines',          src:'https://images.unsplash.com/photo-1494253109108-2e30c049369b?w=800&q=80' },
+  { cat:'minimal',      title:'Shadow Play',          src:'https://images.unsplash.com/photo-1541123437800-1bb1317badc2?w=800&q=80' },
+  { cat:'minimal',      title:'Fog & Form',           src:'https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?w=800&q=80' },
+  { cat:'minimal',      title:'Empty Road',           src:'https://images.unsplash.com/photo-1519922639192-e73293ca430e?w=800&q=80' },
+  { cat:'minimal',      title:'Still Water',          src:'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=800&q=80' },
+
+  // ── PEOPLE (6) ──
+  { cat:'people',       title:'Street Portrait',      src:'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=800&q=80' },
+  { cat:'people',       title:'Dancer in Light',      src:'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800&q=80' },
+  { cat:'people',       title:'Silhouette Dusk',      src:'https://images.unsplash.com/photo-1506252374453-ef5237291d83?w=800&q=80' },
+  { cat:'people',       title:'Joy in Motion',        src:'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80' },
+  { cat:'people',       title:'City Walker',          src:'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&q=80' },
+  { cat:'people',       title:'Young & Free',         src:'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=800&q=80' },
+];
+
+const HERO_DATA = [
+  { title:'EMERALD FOREST',  cat:'NATURE',       desc:'Dive into endless green depths where light filters through ancient canopies.', src:'https://images.unsplash.com/photo-1448375240586-882707db888b?w=1400&q=85' },
+  { title:'NEON PULSE',      cat:'CITY',         desc:'A city that never sleeps, painted in electric hues across rain-slicked streets.', src:'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1400&q=85' },
+  { title:'DEEP AZURE',      cat:'OCEAN',        desc:'The ocean holds secrets deeper than our imagination can fathom.', src:'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1400&q=85' },
+  { title:'PEAK SERENITY',   cat:'MOUNTAINS',    desc:'Where the earth reaches toward the heavens in stone and silence.', src:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1400&q=85' },
+  { title:'CHROMATIC FLOW',  cat:'ABSTRACT',     desc:'Color as emotion — unbound, expressive, and endlessly fascinating.', src:'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=1400&q=85' },
+];
+
+/* ════════════════════════════════════
+   SPLASH LOADER
+════════════════════════════════════ */
+let pct = 0;
+const bar = document.getElementById('splashBar');
+const pctEl = document.getElementById('splashPct');
+const splashTimer = setInterval(() => {
+  pct += Math.random() * 18 + 5;
+  if (pct >= 100) {
+    pct = 100;
+    clearInterval(splashTimer);
+    bar.style.width = '100%';
+    pctEl.textContent = '100%';
+    setTimeout(() => {
+      document.getElementById('splashLoadingArea').style.display = 'none';
+      const btn = document.getElementById('splashOpenBtn');
+      btn.style.display = 'inline-flex';
+    }, 400);
+    return;
+  }
+  bar.style.width = pct + '%';
+  pctEl.textContent = Math.floor(pct) + '%';
+}, 180);
+
+function enterApp() {
+  const btn = document.getElementById('splashOpenBtn');
+  btn.style.transform = 'scale(0.95)';
+  setTimeout(() => {
+    document.getElementById('splash').classList.add('hide');
+    document.getElementById('appNav').classList.add('show');
+    buildHeroSlider();
+    buildGallery();
+    buildPanelSlides();
+  }, 300);
+}
+
+/* ════════════════════════════════════
+   HERO SLIDER
+════════════════════════════════════ */
+let heroIdx = 0, heroTimer;
+function buildHeroSlider() {
+  const slider = document.getElementById('heroSlider');
+  const dotsEl = document.getElementById('heroDots');
+  HERO_DATA.forEach((h, i) => {
+    const slide = document.createElement('div');
+    slide.className = 'hero-slide' + (i === 0 ? ' active' : '');
+    slide.innerHTML = `
+      <img src="${h.src}" alt="${h.title}">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <p class="hero-cat">${h.cat}</p>
+        <h1 class="hero-title">${h.title}</h1>
+        <p class="hero-desc">${h.desc}</p>
+        <button class="hero-btn" onclick="scrollToGallery()">
+          <div class="hb-bg"></div>
+          <div class="hb-shine"></div>
+          <span>View Gallery</span>
+        </button>
+      </div>`;
+    slider.insertBefore(slide, dotsEl);
+    const dot = document.createElement('div');
+    dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
+    dot.onclick = () => goHero(i);
+    dotsEl.appendChild(dot);
+  });
+
+  // arrows — bind AFTER slides exist
+  document.getElementById('heroNext').onclick = () => { clearInterval(heroTimer); goHero(heroIdx + 1); heroTimer = setInterval(()=>goHero(heroIdx+1), 5500); };
+  document.getElementById('heroPrev').onclick = () => { clearInterval(heroTimer); goHero(heroIdx - 1); heroTimer = setInterval(()=>goHero(heroIdx+1), 5500); };
+
+  // hero touch swipe
+  let hTouchX = 0;
+  const sliderEl = document.getElementById('heroSlider');
+  sliderEl.addEventListener('touchstart', e => { hTouchX = e.touches[0].clientX; }, {passive:true});
+  sliderEl.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - hTouchX;
+    if (Math.abs(dx) > 40) { clearInterval(heroTimer); goHero(dx < 0 ? heroIdx+1 : heroIdx-1); heroTimer = setInterval(()=>goHero(heroIdx+1),5500); }
+  }, {passive:true});
+
+  heroTimer = setInterval(()=>goHero(heroIdx+1), 5500);
+}
+
+function goHero(n) {
+  const slides = document.querySelectorAll('.hero-slide');
+  const dots   = document.querySelectorAll('.hero-dot');
+  if (!slides.length) return;
+  slides[heroIdx].classList.remove('active');
+  dots[heroIdx].classList.remove('active');
+  heroIdx = ((n % HERO_DATA.length) + HERO_DATA.length) % HERO_DATA.length;
+  slides[heroIdx].classList.add('active');
+  dots[heroIdx].classList.add('active');
+}
+
+function scrollToGallery() { document.getElementById('mainContent').scrollIntoView({behavior:'smooth'}); }
+
+/* ════════════════════════════════════
+   PANEL SLIDES (hamburger — all photos)
+════════════════════════════════════ */
+// Curated guaranteed-working image list for panel
+const PANEL_PHOTOS = [
+  { cat:'nature',       title:'Emerald Forest',   src:'https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&q=80' },
+  { cat:'nature',       title:'Golden Hour',       src:'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&q=80' },
+  { cat:'nature',       title:'Wild Bloom',        src:'https://images.unsplash.com/photo-1490750967868-88df5691cc11?w=600&q=80' },
+  { cat:'ocean',        title:'Deep Azure',        src:'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=600&q=80' },
+  { cat:'ocean',        title:'Crashing Wave',     src:'https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?w=600&q=80' },
+  { cat:'ocean',        title:'Sunset Shore',      src:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80' },
+  { cat:'architecture', title:'Glass Horizon',     src:'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80' },
+  { cat:'architecture', title:'Steel & Light',     src:'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80' },
+  { cat:'city',         title:'Neon Pulse',        src:'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&q=80' },
+  { cat:'city',         title:'Urban Grid',        src:'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=600&q=80' },
+  { cat:'city',         title:'Midnight Rain',     src:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=600&q=80' },
+  { cat:'mountains',    title:'Peak Serenity',     src:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80' },
+  { cat:'mountains',    title:'Dawn Ridge',        src:'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=600&q=80' },
+  { cat:'mountains',    title:'Snow Veil',         src:'https://images.unsplash.com/photo-1520962880247-cfaf541c8724?w=600&q=80' },
+  { cat:'abstract',     title:'Chromatic Flow',    src:'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600&q=80' },
+  { cat:'abstract',     title:'Liquid Light',      src:'https://images.unsplash.com/photo-1550859492-d5da9d8e45f3?w=600&q=80' },
+  { cat:'abstract',     title:'Nebula Dream',      src:'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=600&q=80' },
+  { cat:'desert',       title:'Sand Dunes',        src:'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=600&q=80' },
+  { cat:'desert',       title:'Arid Horizon',      src:'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&q=80' },
+  { cat:'wildlife',     title:'Lion King',         src:'https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=600&q=80' },
+  { cat:'wildlife',     title:'Eagle Eye',         src:'https://images.unsplash.com/photo-1444464666168-49d633b86797?w=600&q=80' },
+  { cat:'wildlife',     title:'Fox at Dusk',       src:'https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=600&q=80' },
+  { cat:'space',        title:'Milky Way',         src:'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=600&q=80' },
+  { cat:'space',        title:'Star Trail',        src:'https://images.unsplash.com/photo-1464802686167-b939a6910659?w=600&q=80' },
+  { cat:'flowers',      title:'Cherry Blossom',    src:'https://images.unsplash.com/photo-1522383225653-ed111181a951?w=600&q=80' },
+  { cat:'flowers',      title:'Sunflower Gold',    src:'https://images.unsplash.com/photo-1470509037663-253d2d33cf3b?w=600&q=80' },
+  { cat:'travel',       title:'Santorini Blue',    src:'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=600&q=80' },
+  { cat:'travel',       title:'Kyoto Temple',      src:'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=600&q=80' },
+  { cat:'travel',       title:'Machu Picchu',      src:'https://images.unsplash.com/photo-1587595431973-160d0d94add1?w=600&q=80' },
+  { cat:'food',         title:'Ramen Bowl',        src:'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&q=80' },
+  { cat:'food',         title:'Fresh Berries',     src:'https://images.unsplash.com/photo-1498557850523-fd3d118b962e?w=600&q=80' },
+  { cat:'minimal',      title:'Shadow Play',       src:'https://images.unsplash.com/photo-1558591710-4b4a1ae0f7e2?w=600&q=80' },
+  { cat:'people',       title:'Street Portrait',   src:'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&q=80' },
+  { cat:'people',       title:'Silhouette Dusk',   src:'https://images.unsplash.com/photo-1506252374453-ef5237291d83?w=600&q=80' },
+];
+
+/* ════════════════════════════════════
+   PANEL — TABS + CATEGORY LIST + SLIDES
+════════════════════════════════════ */
+
+// Category meta: emoji + cover image (reliable URLs only)
+const CAT_META = {
+  all:          { emoji:'🌐', cover:'https://images.unsplash.com/photo-1448375240586-882707db888b?w=120&q=70' },
+  nature:       { emoji:'🌿', cover:'https://images.unsplash.com/photo-1448375240586-882707db888b?w=120&q=70' },
+  ocean:        { emoji:'🌊', cover:'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=120&q=70' },
+  architecture: { emoji:'🏛', cover:'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=120&q=70' },
+  city:         { emoji:'🌆', cover:'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=120&q=70' },
+  mountains:    { emoji:'⛰', cover:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=120&q=70' },
+  abstract:     { emoji:'🎨', cover:'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=120&q=70' },
+  desert:       { emoji:'🏜', cover:'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=120&q=70' },
+  wildlife:     { emoji:'🦁', cover:'https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=120&q=70' },
+  space:        { emoji:'🌌', cover:'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=120&q=70' },
+  flowers:      { emoji:'🌸', cover:'https://images.unsplash.com/photo-1522383225653-ed111181a951?w=120&q=70' },
+  travel:       { emoji:'✈️', cover:'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=120&q=70' },
+  food:         { emoji:'🍜', cover:'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=120&q=70' },
+  minimal:      { emoji:'◻️', cover:'https://images.unsplash.com/photo-1494253109108-2e30c049369b?w=120&q=70' },
+  people:       { emoji:'👤', cover:'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=120&q=70' },
+};
+
+function buildPanelSlides() {
+  buildCategoryList();
+  buildPhotoSlides();
+}
+
+function buildCategoryList() {
+  const container = document.getElementById('panelCatList');
+  container.innerHTML = '';
+
+  // Count per category
+  const counts = {};
+  PHOTOS.forEach(p => { counts[p.cat] = (counts[p.cat] || 0) + 1; });
+
+  // ALL row first
+  const allItem = makeCatItem('all', PHOTOS.length);
+  container.appendChild(allItem);
+
+  // Each category
+  Object.keys(counts).forEach(cat => {
+    container.appendChild(makeCatItem(cat, counts[cat]));
+  });
+}
+
+function makeCatItem(cat, count) {
+  const meta = CAT_META[cat] || { emoji:'📷', cover:'' };
+  const item = document.createElement('div');
+  item.className = 'pcat-item' + (cat === currentCat ? ' active' : '');
+  item.dataset.cat = cat;
+  item.innerHTML = `
+    <img class="pcat-thumb" src="${meta.cover}" alt="${cat}" onerror="this.style.display='none'">
+    <div class="pcat-info">
+      <div class="pcat-name">${meta.emoji} ${cat === 'all' ? 'All Photos' : cat.charAt(0).toUpperCase()+cat.slice(1)}</div>
+      <div class="pcat-count">${count} PHOTO${count !== 1 ? 'S' : ''}</div>
+    </div>
+    <span class="pcat-arrow">›</span>`;
+  item.onclick = () => {
+    // update active state in panel
+    document.querySelectorAll('.pcat-item').forEach(el => el.classList.remove('active'));
+    item.classList.add('active');
+    // filter gallery
+    currentCat = cat;
+    document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('active'));
+    const fb = document.querySelector(`.f-btn[data-cat="${cat}"]`);
+    if (fb) fb.classList.add('active');
+    renderGallery();
+    closePanel();
+    setTimeout(() => document.getElementById('mainContent').scrollIntoView({behavior:'smooth'}), 200);
+  };
+  return item;
+}
+
+function buildPhotoSlides() {
+  const container = document.getElementById('panelSlides');
+  container.innerHTML = '';
+  const reliable = PHOTOS.filter((_, i) => i % 3 === 0).slice(0, 24); // every 3rd = good spread
+  reliable.forEach(p => {
+    const globalIdx = PHOTOS.indexOf(p);
+    const card = document.createElement('div');
+    card.className = 'slide-card';
+    card.innerHTML = `
+      <img src="${p.src}" alt="${p.title}" loading="lazy">
+      <div class="slide-badge">${p.cat.toUpperCase()}</div>
+      <div class="slide-info">
+        <div class="slide-cat">${p.cat}</div>
+        <div class="slide-name">${p.title}</div>
+      </div>`;
+    card.onclick = () => {
+      closePanel();
+      currentCat = 'all';
+      document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.f-btn[data-cat="all"]').classList.add('active');
+      renderGallery();
+      setTimeout(() => openLightbox(globalIdx), 100);
+    };
+    container.appendChild(card);
+  });
+}
+
+function switchPanelTab(tab, btn) {
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panelCatList').style.display  = tab === 'categories' ? 'flex' : 'none';
+  document.getElementById('panelSlides').style.display   = tab === 'photos'     ? 'flex' : 'none';
+}
+
+/* ════════════════════════════════════
+   HAMBURGER / PANEL
+════════════════════════════════════ */
+const ham      = document.getElementById('hamburger');
+const panel    = document.getElementById('sidePanel');
+const backdrop = document.getElementById('backdrop');
+ham.onclick = openPanel;
+document.getElementById('panelClose').onclick = closePanel;
+backdrop.onclick = closePanel;
+function openPanel()  { ham.classList.add('open'); panel.classList.add('open'); backdrop.classList.add('show'); }
+function closePanel() { ham.classList.remove('open'); panel.classList.remove('open'); backdrop.classList.remove('show'); }
+
+/* ════════════════════════════════════
+   GALLERY — track shown per filtered list
+════════════════════════════════════ */
+let currentCat = 'all';
+const BATCH = 16;   // more photos per load
+let shownCount = 0;
+let filteredPool = []; // indices into PHOTOS currently filtered
+
+function buildGallery() { renderGallery(); }
+
+function getFiltered() {
+  return currentCat === 'all'
+    ? PHOTOS.map((_, i) => i)
+    : PHOTOS.map((p, i) => p.cat === currentCat ? i : -1).filter(i => i >= 0);
+}
+
+function renderGallery() {
+  const grid = document.getElementById('gallery');
+  grid.innerHTML = '';
+  shownCount = 0;
+  filteredPool = getFiltered();
+  const initial = filteredPool.slice(0, BATCH);
+  initial.forEach((globalIdx, animIdx) => addCard(PHOTOS[globalIdx], globalIdx, animIdx));
+  shownCount = initial.length;
+  updateStats(shownCount, filteredPool.length);
+  document.getElementById('loadSec').style.display = filteredPool.length > shownCount ? 'block' : 'none';
+}
+
+function addCard(p, globalIdx, animIdx) {
+  const grid = document.getElementById('gallery');
+  const item = document.createElement('div');
+  item.className = 'g-item';
+  item.dataset.gidx = globalIdx; // store true index
+  item.innerHTML = `
+    <img src="${p.src}" alt="${p.title}" loading="lazy">
+    <div class="g-tag">${p.cat.toUpperCase()}</div>
+    <div class="g-overlay">
+      <div class="g-cat">${p.cat.toUpperCase()}</div>
+      <div class="g-title">${p.title}</div>
+    </div>`;
+  // Click: find position in filteredPool and open lightbox
+  item.onclick = () => {
+    filteredPool = getFiltered(); // refresh
+    const pos = filteredPool.indexOf(globalIdx);
+    openLightbox(pos >= 0 ? pos : 0);
+  };
+  grid.appendChild(item);
+}
+
+function updateStats(shown, total) {
+  document.getElementById('sShown').textContent = shown;
+  document.getElementById('sTotal').textContent = total;
+}
+
+/* FILTER */
+document.getElementById('filterBar').addEventListener('click', e => {
+  const btn = e.target.closest('.f-btn');
+  if (!btn) return;
+  document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentCat = btn.dataset.cat;
+  renderGallery();
+});
+
+/* LOAD MORE */
+document.getElementById('loadBtn').onclick = function() {
+  const btn = this;
+  btn.classList.add('loading');
+  setTimeout(() => {
+    filteredPool = getFiltered();
+    const nextBatch = filteredPool.slice(shownCount, shownCount + BATCH);
+    nextBatch.forEach((globalIdx, i) => {
+      addCard(PHOTOS[globalIdx], globalIdx, i);
+    });
+    // pop-in animation on newly added cards
+    const allCards = document.querySelectorAll('.g-item');
+    const startIdx = allCards.length - nextBatch.length;
+    for (let i = 0; i < nextBatch.length; i++) {
+      const card = allCards[startIdx + i];
+      if (card) {
+        card.style.opacity = '0';
+        card.style.transform = 'scale(0.88) translateY(30px)';
+        setTimeout(() => {
+          card.style.transition = 'opacity 0.45s ease, transform 0.45s ease';
+          card.style.opacity = '1';
+          card.style.transform = 'scale(1) translateY(0)';
+        }, i * 60);
+      }
+    }
+    shownCount += nextBatch.length;
+    btn.classList.remove('loading');
+    updateStats(shownCount, filteredPool.length);
+    if (shownCount >= filteredPool.length) {
+      document.getElementById('loadSec').style.display = 'none';
+    }
+  }, 1200);
+};
+
+/* ════════════════════════════════════
+   LIGHTBOX — fully fixed
+   lbIdx = position within filteredPool
+════════════════════════════════════ */
+let lbIdx = 0;
+
+function openLightbox(poolPos) {
+  filteredPool = getFiltered();
+  lbIdx = Math.max(0, Math.min(poolPos, filteredPool.length - 1));
+  renderLightbox();
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function renderLightbox() {
+  filteredPool = getFiltered();
+  if (!filteredPool.length) return;
+  // safety clamp
+  lbIdx = ((lbIdx % filteredPool.length) + filteredPool.length) % filteredPool.length;
+  const p = PHOTOS[filteredPool[lbIdx]];
+  const img = document.getElementById('lbImg');
+  // fade transition
+  img.style.opacity = '0';
+  img.style.transform = 'scale(0.95)';
+  img.src = p.src.replace('w=800', 'w=1400');
+  img.onload = () => {
+    img.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+    img.style.opacity = '1';
+    img.style.transform = 'scale(1)';
+  };
+  document.getElementById('lbCatTxt').textContent = p.cat.toUpperCase();
+  document.getElementById('lbTtl').textContent = p.title;
+  // counter
+  const counter = document.getElementById('lbCounter');
+  if (counter) counter.textContent = (lbIdx + 1) + ' / ' + filteredPool.length;
+}
+
+function lbNext() { lbIdx = (lbIdx + 1) % filteredPool.length; renderLightbox(); }
+function lbPrev() { lbIdx = (lbIdx - 1 + filteredPool.length) % filteredPool.length; renderLightbox(); }
+
+function closeLb() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('lbClose').onclick = closeLb;
+document.getElementById('lightbox').addEventListener('click', e => {
+  if (e.target === document.getElementById('lightbox')) closeLb();
+});
+document.getElementById('lbNext').onclick = lbNext;
+document.getElementById('lbPrev').onclick = lbPrev;
+
+// keyboard
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'Escape')      closeLb();
+  if (e.key === 'ArrowRight')  lbNext();
+  if (e.key === 'ArrowLeft')   lbPrev();
+});
+
+// touch swipe in lightbox
+let lbTouchX = 0;
+document.getElementById('lightbox').addEventListener('touchstart', e => {
+  lbTouchX = e.touches[0].clientX;
+}, {passive:true});
+document.getElementById('lightbox').addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - lbTouchX;
+  if (Math.abs(dx) > 40) { dx < 0 ? lbNext() : lbPrev(); }
+}, {passive:true});
+</script>
+</body>
+</html>
